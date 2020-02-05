@@ -13,7 +13,46 @@ var budgetController = (function() {
     this.value = value;
   };
 
-  
+  var data = {
+    allItems: {
+      exp: [],
+      inc: []
+    },
+    totals: {
+      exp: 0,
+      inc: 0
+    }
+  };
+
+  return {
+    addItem: function(type, des, val) {
+      var newItem, ID;
+
+      // ID = last ID + 1
+      // Создаст айдишник для нового айтема отталскиваясь от текущего кол-ва айтемов в аррэе 
+      if(data.allItems[type].length > 0) {
+        ID = data.allItems[type][data.allItems[type].length - 1].id;
+      } else {
+        ID = 0;
+      }
+      
+
+      // Создаст новый айтем по типу inc или exp
+      if(type === 'exp') {
+        newItem = new Expense(ID, des, val)
+      } else {
+        newItem = new Income(ID, des, val)
+      }
+
+      data.allItems[type].push(newItem); //Позволит разделить входящие объекты по типу и добавить их внутрь inc или exp аррэя внутри allItems
+      return newItem; //возвращаем созданный объект, чтобы другие модули имели к нему доступ
+
+    },
+
+    testing: function() {
+      console.log(data);
+    }
+  }
 
 
 })();
@@ -64,9 +103,11 @@ var controller = (function(budgerCtrl, UICtrl)  { //так будут назыв
    //передаем объект со стилями контроллеру, чтобы они могли общаться между собой. Не забываем, что это метод и его нужно вызывать. 
 
   var ctrlAddItem = function() {
-       // 1. Get the field input data
-      var input = UIController.getInput();
+    var input, newItem;
+    // 1. Get the field input data
+    input = UIController.getInput();
     // 2. Add the new item to the budget controller
+    newItem = budgerCtrl.addItem(input.type, input.description, input.value); //структура передаваемая из get input
     // 3. Add the item to the UI
     // 4. Calculate the budget
     // 5. Display the budget on the UI
