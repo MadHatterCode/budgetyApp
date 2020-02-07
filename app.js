@@ -13,6 +13,14 @@ var budgetController = (function() {
     this.value = value;
   };
 
+  var calculateTotal = function(type) {
+    var sum = 0;
+    data.allItems[type].forEach(function(cur) {
+      sum += cur.value
+    });
+    data.totals[type] = sum;
+  };
+
   var data = {
     allItems: {
       exp: [],
@@ -21,7 +29,9 @@ var budgetController = (function() {
     totals: {
       exp: 0,
       inc: 0
-    }
+    },
+    budget: 0,
+    percentage: -1
   };
 
   return {
@@ -46,6 +56,17 @@ var budgetController = (function() {
 
       data.allItems[type].push(newItem); //Позволит разделить входящие объекты по типу и добавить их внутрь inc или exp аррэя внутри allItems
       return newItem; //возвращаем созданный объект, чтобы другие модули имели к нему доступ
+
+    },
+
+    calculateBudget: function() {
+
+      //calcuate total income and exp
+      calculateTotal('exp');
+      calculateTotal('inc');
+      //calculate a budget: income - expenses
+      data.budget = data.totals.income - data.totals.exp;
+      // calculate the percentage of income that we spent
 
     },
 
@@ -150,14 +171,18 @@ var controller = (function(budgerCtrl, UICtrl)  { //так будут назыв
     var input, newItem;
     // 1. Get the field input data
     input = UIController.getInput();
-    // 2. Add the new item to the budget controller
-    newItem = budgerCtrl.addItem(input.type, input.description, input.value); //структура передаваемая из get input
-    // 3. Add the item to the UI
-    UICtrl.addListItem(newItem, input.type) //передаем модулю UI объект созданный выше
-    //3.1 Clear th fields
-    UICtrl.clearFields();
-    // 5. Calculate and update budget
-    updateBudget();
+    if(input.description !== "" && !isNAN(input.value) && input.value > 0){
+
+      // 2. Add the new item to the budget controller
+      newItem = budgerCtrl.addItem(input.type, input.description, input.value); //структура передаваемая из get input
+      // 3. Add the item to the UI
+      UICtrl.addListItem(newItem, input.type) //передаем модулю UI объект созданный выше
+      //3.1 Clear th fields
+      UICtrl.clearFields();
+      // 5. Calculate and update budget
+      updateBudget();
+    }
+
   };
 
   return {
